@@ -2,18 +2,28 @@
 from sqlalchemy import create_engine, inspect, engine, inspection
 import pandas as pd
 import os
+import json
+import logging
 from dotenv import load_dotenv
 
 def buildEngine(schema='') -> engine:
-    dialect = 'mysql'
-    driver = 'mysqldb'
+    try:
+        with open(os.path.join(os.getcwd(),'database.json'), "r") as read_file:
+            config = json.load(read_file)
+    except Exception as e: 
+        logging.error("database.json failed to load")
+        logging.error(e)
+    
     username = os.getenv("DBUSER")
     password = os.getenv("DBPASSWD")
-    dbaddress = os.getenv("DBADDRESS")
-    dbname = schema
-    port = os.getenv("DBPORT")
-    url = (f"{dialect}+{driver}://{username}:{password}"
-            f"@{dbaddress}:{port}/{dbname}")
+
+    default  = 'ABACUS' #Sort this out!
+
+    url = (
+        f"{config[default]['dialect']}+{config[default]['driver']}://"
+        f"{username}:{password}@{config[default]['hostname']}:"
+        f"{config[default]['port']}/{config[default]['database']}")
+        
     try:
         engine = create_engine(url)
     except Exception as e:
