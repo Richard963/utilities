@@ -1,0 +1,12 @@
+{
+    "Database Identifier":{
+        "hostname":"localhost",
+        "port":8080,
+        "database":"Default",
+        "dialect":"mysql",
+        "driver":"mysqldb"
+    },
+    "Another Database":{
+
+    }
+}
