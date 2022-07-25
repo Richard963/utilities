@@ -6,38 +6,37 @@ import json
 import logging
 from dotenv import load_dotenv
 
-def buildEngine() -> engine:
-    try:
-        with open(os.path.join(os.getcwd(),'database.json'), "r") as read_file:
-            config = json.load(read_file)
-    except Exception as e: 
-        logging.error("database.json failed to load")
-        logging.error(e)
-    
-    username = os.getenv("DBUSER")
-    password = os.getenv("DBPASSWD")
-
-    default  = 'Dev' #Sort this out!
-
-    url = (
-        f"{config[default]['dialect']}+{config[default]['driver']}://"
-        f"{username}:{password}@{config[default]['hostname']}:"
-        f"{config[default]['port']}/{config[default]['database']}")
-        
-    try:
-        engine = create_engine(url)
-    except Exception as e:
-        print(e)
-    return engine
-
-
 class dbCNXN:
     def __init__(self) -> None:
         load_dotenv()
-        self.engine = buildEngine()
+        self.engine = self.build_engine()
         return None
 
-    def databaseInformation(self)-> inspection:
+    def build_engine() -> engine:
+        try:
+            with open(os.path.join(os.getcwd(),'database.json'), "r") as read_file:
+                config = json.load(read_file)
+        except Exception as e: 
+            logging.error("database.json failed to load")
+            logging.error(e)
+        
+        username = os.getenv("DBUSER")
+        password = os.getenv("DBPASSWD")
+
+        default  = 'Dev' #Sort this out!
+
+        url = (
+            f"{config[default]['dialect']}+{config[default]['driver']}://"
+            f"{username}:{password}@{config[default]['hostname']}:"
+            f"{config[default]['port']}/{config[default]['database']}")
+            
+        try:
+            engine = create_engine(url)
+        except Exception as e:
+            print(e)
+        return engine
+
+    def database_information(self)-> inspection:
         try:
             data = inspect(self.engine)
             data.get_schema_names()
