@@ -17,7 +17,7 @@ def buildEngine() -> engine:
     username = os.getenv("DBUSER")
     password = os.getenv("DBPASSWD")
 
-    default  = 'ABACUS' #Sort this out!
+    default  = 'Dev' #Sort this out!
 
     url = (
         f"{config[default]['dialect']}+{config[default]['driver']}://"
@@ -61,11 +61,11 @@ class dbCNXN:
         data = pd.read_sql_query(query,self.engine)
         return data
 
-    def write(self,df:pd.DataFrame,target:str):
+    def write(self,df:pd.DataFrame,target_table:str, schema:str):
         df.to_sql(
-            target,
+            target_table,
             self.engine,
-            schema=self.schema,
+            schema=schema,
             if_exists='append', 
             chunksize=10000,
             index=False
@@ -110,12 +110,12 @@ class Table:
 
     def truncate_table(self) -> None:
         try:
-            self.DB.execute(f"TRUNCATE {self.schema}.{self.tblname} IMMEDIATE")
+            self.DB.execute(f"TRUNCATE TABLE {self.schema}.{self.tblname}")
         except Exception as e:
             print("Table could not be truncated: " + e)
 
     def write(self, df) -> None:
-        self.DB.write(df,self.tblname)
+        self.DB.write(df,self.tblname, self.schema)
 
     def get_100(self) -> pd.DataFrame:
         return self.DB.query(f"SELECT * FROM {self.schema}.{self.tblname} LIMIT 100")
