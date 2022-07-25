@@ -6,7 +6,7 @@ import json
 import logging
 from dotenv import load_dotenv
 
-def buildEngine(schema='') -> engine:
+def buildEngine() -> engine:
     try:
         with open(os.path.join(os.getcwd(),'database.json'), "r") as read_file:
             config = json.load(read_file)
@@ -32,10 +32,9 @@ def buildEngine(schema='') -> engine:
 
 
 class dbCNXN:
-    def __init__(self,schema='') -> None:
+    def __init__(self) -> None:
         load_dotenv()
-        self.engine = buildEngine(schema)
-        self.schema = schema
+        self.engine = buildEngine()
         return None
 
     def databaseInformation(self)-> inspection:
@@ -46,10 +45,10 @@ class dbCNXN:
             print(e)
         return data
 
-    def table_exists(self, table) -> bool:
+    def table_exists(self, table, schema=None) -> bool:
         try:
             data = inspect(self.engine)
-            tables = data.get_table_names()
+            tables = data.get_table_names(schema)
         except Exception as e:
             print(e)
         
@@ -83,11 +82,12 @@ class dbCNXN:
         return None
 
 class Table:
-    def __init__(self, table_name:str, DB:dbCNXN, types:dict={}) -> None:
+    def __init__(self, table_name:str, schema:str, DB:dbCNXN, types:dict={}) -> None:
         self.DB = DB
+        self.schema = schema
         self.tblname = table_name
         self.dtypes = types
-        if not DB.table_exists(self.tblname):
+        if not DB.table_exists(self.tblname, schema=self.schema):
             self.create_table()
         pass
 
@@ -97,19 +97,28 @@ class Table:
             string+=k+" "+str(v)+", "
         string = string[:-2]
         self.DB.execute(f"""
-        CREATE TABLE {self.DB.schema}.{self.tblname} (
+        CREATE TABLE {self.schema}.{self.tblname} (
             {string}
         )
         """)
 
     def drop_table(self) -> None:
         try:
-            self.DB.execute(f"DROP TABLE {self.DB.schema}.{self.tblname}")
+            self.DB.execute(f"DROP TABLE {self.schema}.{self.tblname}")
         except Exception as e:
             print(e)
+
+    def truncate_table(self) -> None:
+        try:
+            self.DB.execute(f"TRUNCATE {self.schema}.{self.tblname} IMMEDIATE")
+        except Exception as e:
+            print("Table could not be truncated: " + e)
 
     def write(self, df) -> None:
         self.DB.write(df,self.tblname)
 
     def get_100(self) -> pd.DataFrame:
-        return self.DB.query(f"SELECT * FROM {self.DB.schema}.{self.tblname} LIMIT 100")
+        return self.DB.query(f"SELECT * FROM {self.schema}.{self.tblname} LIMIT 100")
+
+    def get(self) -> pd.DataFrame:
+        return self.DB.query(f"SELECT * FROM {self.schema}.{self.tblname}")
