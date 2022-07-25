@@ -12,7 +12,7 @@ class dbCNXN:
         self.engine = self.build_engine()
         return None
 
-    def build_engine() -> engine:
+    def build_engine(self) -> engine:
         try:
             with open(os.path.join(os.getcwd(),'database.json'), "r") as read_file:
                 config = json.load(read_file)
