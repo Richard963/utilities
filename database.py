@@ -81,12 +81,12 @@ class dbCNXN:
         return None
 
 class Table:
-    def __init__(self, table_name:str, schema:str, DB:dbCNXN, types:dict={}) -> None:
-        self.DB = DB
+    def __init__(self, table_name:str, schema:str, types:dict={}) -> None:
+        self.DB = dbCNXN()
         self.schema = schema
         self.tblname = table_name
         self.dtypes = types
-        if not DB.table_exists(self.tblname, schema=self.schema):
+        if not self.DB.table_exists(self.tblname, schema=self.schema):
             self.create_table()
         pass
 
