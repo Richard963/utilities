@@ -52,7 +52,7 @@ class dbCNXN:
         except Exception as e:
             print(e)
         
-        if any(table in t for t in tables):
+        if any(table.lower() in t.lower() for t in tables):
             return True
         else:
             return False
@@ -61,11 +61,11 @@ class dbCNXN:
         data = pd.read_sql_query(query,self.engine)
         return data
 
-    def write(self,df:pd.DataFrame,target:str):
+    def write(self,df:pd.DataFrame, tablename:str, schema:str):
         df.to_sql(
-            target,
+            tablename,
             self.engine,
-            schema=self.schema,
+            schema=schema,
             if_exists='append', 
             chunksize=10000,
             index=False
@@ -115,7 +115,7 @@ class Table:
             print("Table could not be truncated: " + e)
 
     def write(self, df) -> None:
-        self.DB.write(df,self.tblname)
+        self.DB.write(df,self.tblname, self.schema)
 
     def get_100(self) -> pd.DataFrame:
         return self.DB.query(f"SELECT * FROM {self.schema}.{self.tblname} LIMIT 100")
