@@ -7,8 +7,9 @@ import logging
 from dotenv import load_dotenv
 
 class dbCNXN:
-    def __init__(self) -> None:
+    def __init__(self, database_alias:str) -> None:
         load_dotenv()
+        self.database_alias = database_alias
         self.engine = self.build_engine()
         return None
 
@@ -23,7 +24,7 @@ class dbCNXN:
         username = os.getenv("DBUSER")
         password = os.getenv("DBPASSWD")
 
-        default  = 'Dev' #Sort this out!
+        default  = self.database_alias  #Sort this out!
 
         url = (
             f"{config[default]['dialect']}+{config[default]['driver']}://"
@@ -48,10 +49,11 @@ class dbCNXN:
         try:
             data = inspect(self.engine)
             tables = data.get_table_names(schema)
+            print(tables)
         except Exception as e:
-            print(e)
+            raise Exception(e)
         
-        if any(table in t for t in tables):
+        if any(table.lower() in t.lower() for t in tables):
             return True
         else:
             return False
@@ -81,8 +83,8 @@ class dbCNXN:
         return None
 
 class Table:
-    def __init__(self, table_name:str, schema:str, types:dict={}) -> None:
-        self.DB = dbCNXN()
+    def __init__(self, table_name:str, schema:str, database_alias:str, types:dict={}) -> None:
+        self.DB = dbCNXN(database_alias)
         self.schema = schema
         self.tblname = table_name
         self.dtypes = types
