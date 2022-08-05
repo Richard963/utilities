@@ -62,9 +62,9 @@ class dbCNXN:
         data = pd.read_sql_query(query,self.engine)
         return data
 
-    def write(self,df:pd.DataFrame,target_table:str, schema:str):
+    def write(self,df:pd.DataFrame, tablename:str, schema:str):
         df.to_sql(
-            target_table,
+            tablename,
             self.engine,
             schema=schema,
             if_exists='append', 
